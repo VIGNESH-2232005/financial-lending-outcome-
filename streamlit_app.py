@@ -77,6 +77,11 @@ if submitted:
             final_features = scaler.transform(final_features)
             
         prediction = model.predict(final_features)
+        probability = model.predict_proba(final_features)[0]
+        
+        # Class 1 is usually "Approved" (Y)
+        prob_approved = probability[1]
+        prob_rejected = probability[0]
         
         result = "Approved" if prediction[0] == 1 else "Rejected"
         
@@ -85,9 +90,22 @@ if submitted:
             if result_val == 'Y': result = "Approved"
             elif result_val == 'N': result = "Rejected"
             
+        st.subheader("Prediction Analysis")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Probability of Approval", f"{prob_approved:.1%}")
+        with col2:
+            st.metric("Probability of Rejection", f"{prob_rejected:.1%}")
+            
+        st.write("---")
+        
         if result == "Approved":
-            st.success(f"Congratulations! The loan application is likely to be {result}.")
+            st.success(f"Result: **APPROVED**")
+            st.progress(prob_approved)
         else:
-            st.error(f"The loan application is likely to be {result}.")
+            st.error(f"Result: **REJECTED**")
+            st.progress(prob_approved)
+            st.info("Tip: To improve your chances, try increasing income or opting for a longer loan term.")
     else:
         st.error("Model artifacts not loaded.")
