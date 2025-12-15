@@ -111,5 +111,48 @@ if submitted:
             st.error(f"Result: **REJECTED**")
             st.progress(prob_approved)
             st.info("Tip: To improve your chances, try increasing income or opting for a longer loan term.")
+            
+        # --- Rule-Based Analysis ---
+        st.write("---")
+        st.subheader("Why this decision? (Rule Check)")
+        
+        # 1. Credit History Rule
+        if credit_history == 1.0:
+            st.success("✅ **Credit History:** PASS (Good Payment History)")
+        else:
+            st.error("❌ **Credit History:** FAIL (Bad History is a Major Rejection Factor)")
+            
+        # 2. Affordability Rule (EMI Calculation)
+        # Assuming 8.5% Annual Interest Rate for estimation
+        r = 0.085 / 12
+        n = loan_term
+        P = float(loan_amount) # This is in Rupees
+        
+        if P > 0 and n > 0:
+            # EMI Formula
+            emi = P * r * (pow(1 + r, n)) / (pow(1 + r, n) - 1)
+            total_income = float(applicant_income) + float(coapplicant_income)
+            
+            # Affordability Threshold: EMI should not exceed 50% of Income
+            if total_income > 0:
+                emi_ratio = emi / total_income
+                
+                col_emi1, col_emi2 = st.columns(2)
+                with col_emi1:
+                    st.write(f"**Estimated EMI:** ₹{emi:,.0f}/month")
+                with col_emi2:
+                    st.write(f"**Total Income:** ₹{total_income:,.0f}/month")
+                
+                if emi_ratio > 0.60: # Using 60% as a slightly lenient cut-off
+                    st.error(f"❌ **Affordability:** FAIL (EMI is {emi_ratio:.0%} of Income, recommended < 50%)")
+                elif emi_ratio > 0.50:
+                    st.warning(f"⚠️ **Affordability:** RISKY (EMI is {emi_ratio:.0%} of Income)")
+                else:
+                    st.success(f"✅ **Affordability:** PASS (EMI is {emi_ratio:.0%} of Income)")
+            else:
+                st.error("❌ **Income:** FAIL (Total Income is 0)")
+        else:
+             st.warning("Cannot calculate EMI (Loan or Term is 0)")
+
     else:
         st.error("Model artifacts not loaded.")
