@@ -45,9 +45,9 @@ with st.form("prediction_form"):
         self_employed = st.selectbox("Self Employed", ["No", "Yes"])
         
     with col2:
-        applicant_income = st.number_input("Applicant Income ($)", min_value=0, value=5000)
-        coapplicant_income = st.number_input("Coapplicant Income ($)", min_value=0, value=0)
-        loan_amount = st.number_input("Loan Amount (Thousands)", min_value=0, value=100)
+        applicant_income = st.number_input("Applicant Income (₹)", min_value=0, value=50000)
+        coapplicant_income = st.number_input("Coapplicant Income (₹)", min_value=0, value=0)
+        loan_amount = st.number_input("Loan Amount (₹)", min_value=0, value=200000)
         loan_term = st.number_input("Loan Amount Term (Months)", min_value=0, value=360)
         credit_history = st.selectbox("Credit History", [1.0, 0.0], format_func=lambda x: "1.0 (Good)" if x == 1.0 else "0.0 (Bad)")
         property_area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
@@ -66,7 +66,11 @@ if submitted:
         
         features.append(float(applicant_income))
         features.append(float(coapplicant_income))
-        features.append(float(loan_amount))
+        
+        # Model expects Loan Amount in 'Thousands'. 
+        # User enters full amount (e.g. 200000). We divide by 1000.
+        features.append(float(loan_amount) / 1000)
+        
         features.append(float(loan_term))
         features.append(float(credit_history))
         features.append(encode_val('residence_area', property_area))
